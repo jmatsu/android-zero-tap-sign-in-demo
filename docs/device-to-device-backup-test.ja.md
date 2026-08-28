@@ -33,7 +33,7 @@
 8. 4. Android Studio > Running Devices > Toolbar の中の **Restore App Data** で先ほどのバックアップファイルを選択
 9. アプリを開くとサインイン済みになっている
 
-<video src="assets/zero-tap-sign-in-from-backup.mp4" width="320" />
+<img src="assets/zero-tap-sign-in-from-backup.gif" width="320">
 
 ### エミュレーター 1 台でも簡易検証は可
 

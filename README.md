@@ -21,7 +21,7 @@ Scenario:
 
 | Fresh install | After a password sign-in | On restore |
 | --- | --- | --- |
-| <img src="assets/sign-in-screen.png" width="320" alt="Sign-in screen, flow log reading: no Restore Key on this device"> | <img src="assets/signed-in-screen.png" width="320" alt="Signed-in screen with a Restore Key registered and eligible for encrypted cloud backup"> | <video src="assets/zero-tap-sign-in-from-backup.mp4" width="320" /> |
+| <img src="assets/sign-in-screen.png" width="320" alt="Sign-in screen, flow log reading: no Restore Key on this device"> | <img src="assets/signed-in-screen.png" width="320" alt="Signed-in screen with a Restore Key registered and eligible for encrypted cloud backup"> | <img src="assets/zero-tap-sign-in-from-backup.gif" width="320"> |
 | No Restore Key on this device, so an ordinary sign-in | The app registered a Restore Key with no prompt, and the server holds it | Sign-in completes w/o user interaction from a Restore Key. |
 
 ## How it works

@@ -57,7 +57,7 @@
 - 引き換えたキーを示す **Signed in with zero taps**バナーと、置き換え後のキーを示す**Restore Key**カードが表示される
 - 生体認証のプロンプトもクレデンシャルの選択画面は出ない(Passkeyとの違い)
 
-<video src="assets/zero-tap-sign-in-from-backup.mp4" width="320" />
+<img src="assets/zero-tap-sign-in-from-backup.gif" width="320">
 
 ## 失敗
 

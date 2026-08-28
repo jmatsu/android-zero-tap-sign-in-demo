@@ -33,7 +33,7 @@ If you would like to use emulators, see [emulator-setup.md](./emulator-setup.md)
 8. Android Studio > Running Devices > toolbar > **Restore App Data**, and pick the backup you just made.
 9. Open the app. It is already signed in.
 
-<video src="assets/zero-tap-sign-in-from-backup.mp4" width="320" />
+<img src="assets/zero-tap-sign-in-from-backup.gif" width="320">
 
 ### A single emulator is enough for a quick check
 

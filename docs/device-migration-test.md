@@ -58,7 +58,7 @@ Run the easier [device-to-device-backup-test.md](device-to-device-backup-test.md
   replacement
 - No biometric prompt and no credential picker (unlike a passkey)
 
-<video src="assets/zero-tap-sign-in-from-backup.mp4" width="320" />
+<img src="assets/zero-tap-sign-in-from-backup.gif" width="320">
 
 ## Failure
 
