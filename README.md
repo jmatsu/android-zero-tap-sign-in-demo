@@ -19,13 +19,10 @@ Scenario:
 4. Open the app on device B: already signed in, with no user confirmation.
   - The server revokes the redeemed Restore Key, and the app immediately registers a fresh one.
 
-| Fresh install | After a password sign-in |
-| --- | --- |
-| <img src="assets/sign-in-screen.png" width="320" alt="Sign-in screen, flow log reading: no Restore Key on this device"> | <img src="assets/signed-in-screen.png" width="320" alt="Signed-in screen with a Restore Key registered and eligible for encrypted cloud backup"> |
-| No Restore Key on this device, so an ordinary sign-in | The app registered a Restore Key with no prompt, and the server holds it |
-
-The step in between is the one worth watching:
-[Zero-Tap Sign-In on a device restored from a backup](assets/zero-tap-sign-in-from-backup.webm) (webm).
+| Fresh install | After a password sign-in | On restore |
+| --- | --- | --- |
+| <img src="assets/sign-in-screen.png" width="320" alt="Sign-in screen, flow log reading: no Restore Key on this device"> | <img src="assets/signed-in-screen.png" width="320" alt="Signed-in screen with a Restore Key registered and eligible for encrypted cloud backup"> | <video src="assets/zero-tap-sign-in-from-backup.mp4" width="320" /> |
+| No Restore Key on this device, so an ordinary sign-in | The app registered a Restore Key with no prompt, and the server holds it | Sign-in completes w/o user interaction from a Restore Key. |
 
 ## How it works
 

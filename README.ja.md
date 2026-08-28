@@ -19,13 +19,10 @@ Android の [Restore Credentials API](https://developer.android.com/identity/sig
 4. 端末 B でアプリを開と、ユーザーの確認なしでサインイン済みになる
   - このときサーバーは使ったRestore Keyを失効させ、アプリはすぐ新しいキーを発行し直すこと
 
-| インストール直後 | パスワードでサインインした後 |
-| --- | --- |
-| <img src="assets/sign-in-screen.png" width="320" alt="サインイン画面。フローログに Restore Key なしと表示されている"> | <img src="assets/signed-in-screen.png" width="320" alt="サインイン済み画面。Restore Key が登録され、暗号化クラウドバックアップの対象になっている"> |
-| この端末に Restore Key がないので通常のサインイン | プロンプトなしで Restore Key を登録済み、サーバーも保持している |
-
-この間の遷移が本題:
-[バックアップから復元した端末での Zero-Tap サインイン](assets/zero-tap-sign-in-from-backup.webm) (webm)
+| インストール直後 | パスワードでサインインした後 | Restore Key による Zero-Tap Sign-In |
+| --- | --- | --- |
+| <img src="assets/sign-in-screen.png" width="320" alt="サインイン画面。フローログに Restore Key なしと表示されている"> | <img src="assets/signed-in-screen.png" width="320" alt="サインイン済み画面。Restore Key が登録され、暗号化クラウドバックアップの対象になっている"> | <video src="assets/zero-tap-sign-in-from-backup.mp4" width="320" /> |
+| この端末に Restore Key がないので通常のサインイン | プロンプトなしで Restore Key を登録済み、サーバーも保持している | ユーザー操作なしでサインインが完了する |
 
 ## 仕組み
 

@@ -58,7 +58,7 @@ Run the easier [device-to-device-backup-test.md](device-to-device-backup-test.md
   replacement
 - No biometric prompt and no credential picker (unlike a passkey)
 
-The transfer itself: [Zero-Tap Sign-In on a device restored from a backup](../assets/zero-tap-sign-in-from-backup.webm) (webm).
+<video src="assets/zero-tap-sign-in-from-backup.mp4" width="320" />
 
 ## Failure
 
