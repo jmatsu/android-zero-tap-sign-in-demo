@@ -1,0 +1,28 @@
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.apk
+captures/
+.cxx/
+
+# Android Studio "Backup App Data" artifacts. These contain real credential
+# material from a test run, including Restore Keys.
+*.backup
+
+# IDE
+.idea/
+*.iml
+.kotlin/
+.DS_Store
+
+# Go
+/backend/backend
+/backend/zerotap-server
+app_backup
+auth_backup
+permissions
+pm_backup
+restore_token_file
+metadata.txt
+*.backup
