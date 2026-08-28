@@ -3,6 +3,31 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!--
+      The manifest side of Zero-Tap Sign-In is four attributes, and it is easy to
+      get most of the way there and then wonder why nothing arrives on device B.
+
+        allowBackup            Auto Backup must be on. With it off, no app data
+                               travels and the Restore Key has nothing to ride
+                               along with.
+        backupAgent            Gives us onRestoreFinished, where the sign-in
+                               happens before the user ever opens the app.
+                               Strictly optional — drop it and the sign-in still
+                               works on first launch, it is just fast rather than
+                               zero-tap.
+        fullBackupOnly         Leaves Auto Backup in charge of moving the data,
+                               so the agent above exists purely for its restore
+                               callback and never implements key/value backup.
+        dataExtractionRules    Android 12+, with fullBackupContent covering 11
+        fullBackupContent      and below. Both exclude the session token; see
+                               those files for why that exclusion is what makes
+                               the flow honest.
+
+      Note what is absent: the Restore Key itself is not app data and is listed
+      nowhere here. Credential Manager backs it up through the platform's own
+      end-to-end encrypted channel, keyed to the package name — which is also
+      why the package name must not change between the two devices.
+    -->
     <application
         android:name=".ZeroTapApp"
         android:allowBackup="true"

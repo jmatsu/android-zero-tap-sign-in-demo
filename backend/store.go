@@ -12,10 +12,15 @@ import (
 	"modernc.org/sqlite"
 )
 
-// CredentialKind separates ordinary user-facing passkeys from the
-// system-managed Restore Keys. Restore Keys are never shown in credential
-// management UIs and are single use: the server deletes them as soon as one is
-// redeemed.
+// CredentialKind separates user-facing passkeys from system-managed Restore
+// Keys. Whatever your credential storage looks like, give it a column like this
+// one: the kind is what lets the login handlers refuse to spend a Restore Key
+// through the passkey path, and it is the cheapest available defence against the
+// worst mistake in this integration.
+//
+// It shapes what you show people, too. A Restore Key belongs in no credential
+// management UI — the user never created it and cannot meaningfully reason
+// about it — and it is single use, deleted the moment it is redeemed.
 type CredentialKind string
 
 const (
@@ -28,7 +33,9 @@ var (
 	ErrAlreadyExists = errors.New("already exists")
 )
 
-// StoredCredential is a WebAuthn credential plus the demo specific metadata.
+// StoredCredential is a WebAuthn credential plus the metadata this demo keeps
+// beside it. Kind is the part you need; CreatedAt only exists so the app has
+// something to display.
 type StoredCredential struct {
 	Credential webauthn.Credential
 	Kind       CredentialKind
@@ -75,9 +82,10 @@ func (u *User) CredentialsOfKind(kind CredentialKind) []*StoredCredential {
 	return out
 }
 
-// Ceremony is a pending WebAuthn registration or authentication. The client
-// gets an opaque id back and echoes it in the finish call, which keeps the
-// challenge server side without needing cookies.
+// Ceremony is a pending WebAuthn registration or authentication. The client gets
+// an opaque id back and echoes it in the finish call, which keeps the challenge
+// server side without needing cookies — worth copying, because the restore login
+// begins on a device with no session and nothing resembling a cookie jar.
 type Ceremony struct {
 	ID        string
 	Kind      CredentialKind
@@ -127,7 +135,9 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 `
 
-// Store keeps every piece of demo state in SQLite.
+// Store keeps every piece of demo state in SQLite. Nothing below is specific to
+// Restore Keys except ReplaceRestoreCredential and RevokeCredential; read those
+// two and map them onto whatever persistence you already have.
 type Store struct {
 	db *sql.DB
 }
@@ -157,7 +167,8 @@ func (s *Store) Close() error { return s.db.Close() }
 
 // must panics on a database error. The schema is fixed and the only writer is
 // this file, so the callers below have nothing useful to do with one; the
-// recover in withLogging turns it into a logged 500.
+// recover in withLogging turns it into a logged 500. It keeps the demo readable
+// at the cost of being the wrong shape for a real service.
 func must(err error) {
 	if err != nil {
 		panic(err)
@@ -290,8 +301,10 @@ func (s *Store) AddCredential(u *User, cred webauthn.Credential, kind Credential
 }
 
 // ReplaceRestoreCredential installs a fresh Restore Key and drops any previous
-// one. Android keeps a single Restore Key per package name, so keeping more
-// than one server side would only leave dead entries behind.
+// one. Replace, do not append: Android keeps exactly one Restore Key per package
+// name, so any second key on the server is by definition one no device can still
+// produce. Accumulating them makes "does this account have a working Restore
+// Key?" a question you can no longer answer.
 //
 // The two statements are not wrapped in a transaction: the single connection
 // set up in NewStore already serialises them, and the worst a crash in between
@@ -301,8 +314,9 @@ func (s *Store) ReplaceRestoreCredential(u *User, cred webauthn.Credential) *Sto
 	return s.AddCredential(u, cred, KindRestore)
 }
 
-// RevokeCredential removes a credential. Redeeming a Restore Key calls this so
-// the key cannot be replayed on a third device.
+// RevokeCredential removes a credential. handleRestoreLoginFinish calls it on
+// every successful zero-tap sign-in, and that call is what makes a Restore Key
+// single use. It is not optional.
 func (s *Store) RevokeCredential(u *User, credentialID string) bool {
 	n, err := s.exec(`DELETE FROM credentials WHERE id = ? AND user_id = ?`, credentialID, u.ID).RowsAffected()
 	must(err)
@@ -310,8 +324,9 @@ func (s *Store) RevokeCredential(u *User, credentialID string) bool {
 	return n > 0
 }
 
-// RevokeCredentialsOfKind drops every credential of one kind and reports what
-// it removed.
+// RevokeCredentialsOfKind drops every credential of one kind and reports what it
+// removed. The restore flow uses it for sign-out, where the account's key has to
+// go whether or not the device manages to clear its own copy.
 func (s *Store) RevokeCredentialsOfKind(u *User, kind CredentialKind) []string {
 	rows, err := s.db.Query(
 		`DELETE FROM credentials WHERE user_id = ? AND kind = ? RETURNING id`, u.ID, string(kind))

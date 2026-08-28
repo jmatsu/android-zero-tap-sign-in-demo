@@ -59,11 +59,21 @@ class AuthViewModel(
     private var startupAttempted = false
 
     /**
-     * Runs once per process: if this install has no session but does hold a
-     * Restore Key from a previous device, sign in silently.
+     * The startup half of rule 2, run once per process: if this install has no
+     * session but does hold a Restore Key from a previous device, sign in
+     * silently.
      *
-     * The first read of either preferences file blocks until it has loaded, so
-     * it happens here inside a coroutine rather than in the constructor.
+     * It runs even though `ZeroTapBackupAgent` already tried. That callback is
+     * best-effort and some restore routes skip it altogether, so doing it here
+     * as well is what turns the zero-tap path from lucky into reliable.
+     *
+     * Note the ordering the UI leans on: nothing decides to show a sign-in screen
+     * until `startupCheckDone` flips, so a restored install never flashes a
+     * sign-in form on its way to being signed in. Copy that if you copy nothing
+     * else from the UI layer.
+     *
+     * The first read of either preferences file blocks until it has loaded, so it
+     * happens here inside a coroutine rather than in the constructor.
      */
     fun onStart(context: Context) {
         if (startupAttempted) return

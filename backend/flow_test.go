@@ -20,7 +20,13 @@ const (
 	defaultSeedUsername = "demo"
 	defaultSeedPassword = "demo-password"
 
-	// Flag combinations the two credential types produce on Android.
+	// The two flag combinations Android actually produces, and the reason this
+	// test file is worth reading before you write your own. Interactive
+	// ceremonies set User Present and User Verified; a zero-tap one sets
+	// neither, because nobody touched anything.
+	//
+	// Backup Eligible and Backup State are set in both cases: these credentials
+	// are synced by design, so do not treat those bits as suspicious.
 	flagsInteractive = flagUserPresent | flagUserVerified | flagBackupEligible | flagBackupState
 	flagsZeroTap     = flagBackupEligible | flagBackupState
 )
@@ -54,7 +60,10 @@ func newTestServerWith(t *testing.T, tweak func(*Config)) *testServer {
 		CeremonyTTL:             5 * time.Minute,
 		AndroidPackageName:      "com.github.jmatsu.zerotap",
 		AndroidCertFingerprints: []string{testFingerprint},
-		// Zero-tap sign-in carries no user gesture, matching the server default.
+		// The server default, and the one worth keeping: a zero-tap sign-in
+		// carries no user gesture, so flipping this to true would make every
+		// test below that uses flagsZeroTap fail — which is exactly what it
+		// would do to a real device transfer.
 		RestoreRequireUserPresence: false,
 		SeedDemoUsername:           defaultSeedUsername,
 		SeedDemoPassword:           defaultSeedPassword,
@@ -220,9 +229,14 @@ func countCredentials(t *testing.T, me map[string]any, kind string) int {
 	return count
 }
 
-// TestZeroTapSignInAfterDeviceTransfer walks the whole scenario: password
-// sign-in on device A, Restore Key creation, then a sign-in on device B that
-// needs no user interaction, after which the Restore Key is gone.
+// TestZeroTapSignInAfterDeviceTransfer walks the whole scenario end to end:
+// password sign-in on device A, silent Restore Key creation, then a sign-in on
+// device B with no user interaction at all, after which the key is gone and
+// device B has armed itself with a fresh one.
+//
+// This is the test to port first. It is the only one that catches the failure
+// mode where every endpoint works in isolation and the flow still cannot survive
+// a second transfer.
 func TestZeroTapSignInAfterDeviceTransfer(t *testing.T) {
 	ts := newTestServer(t)
 

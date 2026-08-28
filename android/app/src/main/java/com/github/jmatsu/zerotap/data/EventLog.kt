@@ -16,9 +16,12 @@ data class LogEntry(
 )
 
 /**
- * An on-screen trace of the auth flow. A zero-tap sign-in is by definition
- * invisible, so without something like this there is nothing to look at when
- * the demo works.
+ * An on-screen trace of the auth flow. Demo scaffolding, but the useful kind: a
+ * zero-tap sign-in is invisible by definition, so without something like this
+ * there is nothing to look at when it works and nothing to read when it does not.
+ * A logcat-only version of this is worth keeping while you bring your own
+ * integration up — especially for the backup agent, whose process you cannot
+ * attach a debugger to in time.
  *
  * Entries are resolved against the app locale as they are written, which keeps
  * the layers below the UI free of Compose while still leaving every message

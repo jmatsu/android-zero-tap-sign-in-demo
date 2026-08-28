@@ -9,11 +9,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Drives every sign-in path in the demo.
+ * Every sign-in path in the demo, and the ordering rules that make the restore
+ * path actually work.
  *
- * The interesting one is [signInWithRestoreKey]: it is the whole reason the
- * app can come up already signed in on a device the user has never touched
- * before.
+ * If you read one file on the Android side, read this one. [CredentialClient]
+ * shows *which* APIs to call; this shows *when*, and that is where integrations
+ * go wrong. Three rules, each of which fails quietly when you skip it:
+ *
+ * 1. Register a Restore Key after every successful sign-in ([signedIn]).
+ *    Skip it and the account is simply never armed for a transfer.
+ * 2. Try to redeem one before showing a sign-in screen ([signInWithRestoreKey],
+ *    called from the backup agent and again at startup). Skip it and the key you
+ *    carefully registered is never used.
+ * 3. When one is redeemed, clear the local copy and immediately register a
+ *    replacement. Skip it and the first transfer works, the second does not --
+ *    which is a bug you will not find without testing two transfers in a row.
  */
 class AuthRepository(
     private val backend: BackendClient,
@@ -73,11 +83,20 @@ class AuthRepository(
     // -------------------------------------------------------- Restore Keys
 
     /**
-     * Registers a Restore Key for the signed-in account, unless this install
-     * already has one.
+     * Rule 1. Registers a Restore Key for the signed-in account, unless this
+     * install already has one.
      *
-     * Nothing is shown to the user. The key is what a future device will use to
-     * prove, without asking anyone, that it inherited this account.
+     * Nothing is shown to the user, which is exactly why it is safe to call
+     * after every sign-in. The key is what a future device will use to prove,
+     * without asking anyone, that it inherited this account.
+     *
+     * The `hasRestoreKey` short-circuit is not just an optimisation: running the
+     * create ceremony on every sign-in is what the Restore Credentials guidance
+     * tells you not to do. The record travels with the backup, so a restored
+     * install correctly reports that it already holds a key.
+     *
+     * [force] exists for the demo's "recreate" button. Production code would
+     * only ever call this without it.
      */
     suspend fun ensureRestoreKey(context: Context, force: Boolean = false) {
         val token = token() ?: return
@@ -109,18 +128,23 @@ class AuthRepository(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            // A missing Restore Key costs the user nothing today; it only means
-            // the next device transfer will ask them to sign in by hand.
+            // Never fatal, and never worth interrupting anyone for: the user is
+            // signed in either way. All a failure costs is that the *next*
+            // device transfer will ask them to sign in by hand. Record why, so
+            // the UI can say so, and carry on.
             setRestoreKey(null, failure = e.describe())
             log.error(R.string.log_restore_create_failed, e.describe())
         }
     }
 
     /**
-     * The zero-tap path, run at startup on a device that was just restored.
+     * Rule 2, and rule 3 in its second half. The zero-tap path: run it at
+     * startup, and from the backup agent, before you conclude that the user
+     * needs to sign in.
      *
-     * Returns null when this device holds no Restore Key, which is the normal
-     * outcome of an ordinary fresh install.
+     * Returns null when this device holds no Restore Key. That is the ordinary
+     * outcome of an ordinary fresh install — show your sign-in screen and say
+     * nothing about it.
      */
     suspend fun signInWithRestoreKey(context: Context): Session? {
         log.info(R.string.log_restore_looking)
@@ -128,10 +152,13 @@ class AuthRepository(
 
         val credentialJson = credentials.getRestoreKey(context, begin.optionsJson())
         if (credentialJson == null) {
-            // App data can be restored without the Restore Key coming with it,
-            // for example when the previous device could not back the key up to
-            // an end-to-end encrypted cloud. The restored record would then be a
-            // lie, and would stop the next sign-in from creating a replacement.
+            // Subtle, and worth guarding explicitly: app data can arrive without
+            // the Restore Key. A device that could only make a local-only key
+            // still backs its SharedPreferences up to the cloud, so the restored
+            // record claims a key this device does not have — and
+            // ensureRestoreKey would then short-circuit and never create a real
+            // one, leaving the install permanently unarmed. Clearing the record
+            // here is what breaks that cycle.
             setRestoreKey(null)
             log.info(R.string.log_restore_none)
             return null
@@ -144,8 +171,10 @@ class AuthRepository(
         log.success(R.string.log_restore_signed_in, restored.username)
         response.revokedCredentialId?.let { log.info(R.string.log_restore_revoked_key, it.short()) }
 
-        // The server already destroyed its half, so the copy sitting on this
-        // device is dead weight. Clear it before minting the replacement.
+        // Rule 3. The server destroyed its half on redemption, so the copy on
+        // this device is already dead. Clear it, then immediately arm the device
+        // again for whatever transfer comes next — without this pair of calls
+        // the first transfer works and the second silently does not.
         forgetRestoreKey()
         ensureRestoreKey(context)
         return restored
@@ -153,6 +182,13 @@ class AuthRepository(
 
     // ------------------------------------------------------------- sign out
 
+    /**
+     * Signs out, and disarms the device in both directions: the server drops the
+     * account's Restore Key and the device drops its copy.
+     *
+     * Skipping the revoke would leave a signed-out phone still able to hand its
+     * account to whatever device inherits its backup.
+     */
     suspend fun signOut(context: Context) {
         val token = token()
 
@@ -182,7 +218,10 @@ class AuthRepository(
 
     // -------------------------------------------------------------- helpers
 
-    /** Writes both halves of the restore-key fact, so they cannot drift apart. */
+    /**
+     * Writes the stored record and the observable status together, so the thing
+     * that survives a transfer and the thing the UI shows cannot drift apart.
+     */
     private fun setRestoreKey(record: RestoreKeyRecord?, failure: String? = null) {
         appState.restoreKey = record
         _restoreKeyStatus.value = RestoreKeyStatus(record = record, failure = failure)
@@ -197,7 +236,11 @@ class AuthRepository(
 
     private fun token(): String? = session.load()?.token
 
-    /** Records a fresh session and arms this device for the next transfer. */
+    /**
+     * Records a fresh session and arms this device for the next transfer. Rule 1,
+     * applied uniformly: every sign-in method funnels through here, so none of
+     * them can forget.
+     */
     private suspend fun signedIn(context: Context, response: AuthResponse): Session {
         val newSession = remember(response)
         ensureRestoreKey(context)

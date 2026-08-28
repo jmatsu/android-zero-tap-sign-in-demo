@@ -12,9 +12,13 @@ import com.github.jmatsu.zerotap.data.SessionStore
 import kotlinx.serialization.json.Json
 
 /**
- * Hand-rolled dependency container. The backup agent runs in a process where
- * the [Application] object may not be the one the UI uses, so the graph is
- * built from a plain [Context] and can be created more than once.
+ * Hand-rolled dependency container, built from a plain [Context] rather than
+ * from [Application], and safe to create more than once.
+ *
+ * That is deliberate, and it is the constraint to check first if you use a DI
+ * framework: `ZeroTapBackupAgent` runs in a process where the [Application]
+ * object is not the one your UI uses, so everything the restore sign-in touches
+ * has to be constructible from the agent itself.
  */
 class AuthGraph(context: Context) {
     private val appContext = context.applicationContext

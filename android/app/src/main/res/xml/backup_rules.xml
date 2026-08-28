@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Auto Backup rules for Android 11 and below.
+  Auto Backup rules for Android 11 and below. data_extraction_rules.xml is the
+  Android 12+ equivalent; keep the two in step.
 
-  The session token is deliberately left behind: it identifies this install, not
-  the user, and if it travelled with the backup then device B would come up
-  already signed in and the Restore Key would never be exercised. Everything
-  else (including the "we already registered a Restore Key" flag) does travel.
+  One exclusion, and it is the one that matters. A session token identifies an
+  install, not a user. If it travelled with the backup, device B would come up
+  already signed in without any credential having been checked — a real hole in
+  a real app, and, while you are building this, the thing that would quietly hide
+  the entire Restore Key flow from you.
+
+  Everything else does travel, including this install's "I already have a Restore
+  Key" record. The Restore Key itself appears in neither file: it is not app data,
+  and Credential Manager moves it through the platform's own encrypted channel.
 -->
 <full-backup-content>
     <exclude

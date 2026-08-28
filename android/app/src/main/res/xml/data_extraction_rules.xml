@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Backup and device-transfer rules for Android 12 and above. See backup_rules.xml
-  for why the session token is excluded from both.
+  Backup and device-transfer rules for Android 12 and above.
+
+  Both routes need the same exclusion, and a rule in one is not a rule in the
+  other: cloud-backup covers "set up a new phone from the cloud", device-transfer
+  covers the cabled setup flow. See backup_rules.xml for why the session token
+  has to stay behind on both.
 -->
 <data-extraction-rules>
     <cloud-backup>

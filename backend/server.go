@@ -13,7 +13,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Account rules, shared by the signup handler and the demo seeder.
+// Account rules, shared by the signup handler and the demo seeder. Demo
+// scaffolding: stand-ins for whatever your service already enforces.
 const (
 	minUsernameLength = 3
 	minPasswordLength = 8
@@ -44,6 +45,14 @@ func NewServer(cfg *Config, log *slog.Logger) (*Server, error) {
 
 func (s *Server) Close() error { return s.store.Close() }
 
+// Routes is the whole API surface. Adding Zero-Tap Sign-In to a service that
+// already does passkeys means the five /api/restore routes and the asset links
+// document; nothing else here is specific to the feature.
+//
+// Note which restore routes are authenticated and which are not. login/begin and
+// login/finish are open, because the device redeeming a Restore Key has no
+// session yet — that is the entire point. register/* and revoke run on the
+// bearer token the app obtained moments earlier.
 func (s *Server) Routes() http.Handler {
 	mux := http.NewServeMux()
 
@@ -100,7 +109,9 @@ func (s *Server) withLogging(next http.Handler) http.Handler {
 		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		// The store panics on database errors, which are bugs or a broken
 		// DB_PATH rather than something a handler can report. Catch them here
-		// so the client gets a 500 and the failure reaches the log.
+		// so the client gets a 500 and the failure reaches the log. It keeps
+		// the demo readable; a real service would return errors instead of
+		// trading on this.
 		defer func() {
 			if v := recover(); v != nil {
 				s.log.Error("panic", "method", r.Method, "path", r.URL.Path, "value", v)
@@ -124,10 +135,20 @@ func (r *statusRecorder) WriteHeader(code int) {
 
 // ------------------------------------------------------------ asset links
 
+// handleAssetLinks serves the Digital Asset Links statement at
+// /.well-known/assetlinks.json, and it is the piece backend developers most
+// often overlook. Credential Manager fetches it over HTTPS from the RP ID host
+// before it will create or use a single credential. If that fetch fails, gets
+// redirected, or comes back without your package name and signing certificate,
+// every ceremony fails with an error that never mentions asset links.
+//
+// Serving it from the API is a demo convenience. In production it often belongs
+// on a CDN or static host instead — but it has to answer at exactly
+// https://<rpId>/.well-known/assetlinks.json.
 func (s *Server) handleAssetLinks(w http.ResponseWriter, r *http.Request) {
 	statement := []map[string]any{{
-		// get_login_creds is what Credential Manager checks before it lets the
-		// app create or use passkeys and Restore Keys for this RP ID.
+		// get_login_creds is the relation that matters: it grants this app the
+		// right to hold passkeys and Restore Keys for this RP ID.
 		"relation": []string{
 			"delegate_permission/common.handle_all_urls",
 			"delegate_permission/common.get_login_creds",
@@ -142,6 +163,11 @@ func (s *Server) handleAssetLinks(w http.ResponseWriter, r *http.Request) {
 }
 
 // ------------------------------------------------------------ password auth
+//
+// Nothing in this section is specific to Restore Keys. It stands in for whatever
+// first sign-in your service already has — password, OTP, SSO, magic link --
+// because a Restore Key can only ever be registered onto a session that some
+// other method established.
 
 type credentialsRequest struct {
 	Username string `json:"username"`
@@ -165,7 +191,8 @@ type authResponse struct {
 	Method string   `json:"method"`
 	User   userView `json:"user"`
 
-	// Set only by the restore flow: the single-use key that was just spent.
+	// Set only by the restore flow: the single-use key that was just spent, so
+	// the app can drop its local copy rather than go on trusting it.
 	RevokedCredentialID string `json:"revokedCredentialId,omitempty"`
 }
 
@@ -236,8 +263,9 @@ func (s *Server) handlePasswordLogin(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, authResponse{Token: sess.Token, Method: sess.Method, User: s.viewOf(user)})
 }
 
-// SeedDemoUser creates the configured demo account, if any. It is a no-op when
-// seeding is disabled, and safe to call on a store that already has the user.
+// SeedDemoUser creates the configured demo account, if any. Demo scaffolding:
+// a no-op when seeding is disabled, and safe to call on a store that already has
+// the user.
 func (s *Server) SeedDemoUser() error {
 	if s.cfg.SeedDemoUsername == "" {
 		return nil

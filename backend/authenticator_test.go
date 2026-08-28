@@ -22,10 +22,15 @@ const (
 	flagAttestedCredentials byte = 1 << 6
 )
 
-// softAuthenticator is a minimal ES256 authenticator used to drive the server
-// the same way Credential Manager would. It lets the tests cover the exact
-// shape of a restore-key assertion, including the absence of the User Present
-// flag during a zero-tap sign-in.
+// softAuthenticator is a minimal ES256 authenticator that drives the server the
+// way Credential Manager would. It exists because the difference that matters is
+// a single flag bit: this can produce an assertion carrying neither User Present
+// nor User Verified, which is exactly what a zero-tap sign-in looks like and
+// exactly what no real device will hand you in a unit test.
+//
+// If you are porting the server side, something like this is the cheapest way to
+// prove two things at once: that your restore path accepts a flagless assertion,
+// and that your passkey path still refuses one.
 type softAuthenticator struct {
 	t            *testing.T
 	key          *ecdsa.PrivateKey
@@ -102,8 +107,10 @@ func (a *softAuthenticator) authData(rpID string, flags byte) []byte {
 	return data
 }
 
-// Register produces a RegistrationResponseJSON with "none" attestation, the
-// format Android returns for both passkeys and Restore Keys.
+// Register produces a RegistrationResponseJSON with "none" attestation, which is
+// what Android returns for both passkeys and Restore Keys. Do not expect
+// attestation to distinguish the two for you — your own credential kind is the
+// only thing that does.
 func (a *softAuthenticator) Register(rpID, challenge string, flags byte) json.RawMessage {
 	a.t.Helper()
 

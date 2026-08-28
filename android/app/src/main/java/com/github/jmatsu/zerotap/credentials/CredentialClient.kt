@@ -18,16 +18,30 @@ import androidx.credentials.exceptions.NoCredentialException
 import androidx.credentials.exceptions.restorecredential.E2eeUnavailableException
 
 /**
- * Everything this app does with Credential Manager.
+ * Every Credential Manager call this app makes. If you are adding Zero-Tap
+ * Sign-In to your own app, the three Restore Key methods below are very nearly
+ * the whole client-side API surface, and they all come from
+ * `androidx.credentials`.
  *
- * Passkeys and Restore Keys are both WebAuthn credentials and both take the
- * same server-issued JSON; the difference is who drives the ceremony. A passkey
- * needs the user in front of the screen, a Restore Key is created and replayed
- * by the system with no UI at all, which is exactly what makes zero-tap
- * sign-in possible after a device transfer.
+ * Passkeys and Restore Keys are both WebAuthn credentials and both take the same
+ * server-issued JSON. What differs is who drives the ceremony:
+ *
+ * - **Passkey** — the user is in front of the screen and answers a prompt, on
+ *   creation and on every use.
+ * - **Restore Key** — the system creates it and later replays it with no UI at
+ *   all, and only ever on a device that inherited a backup.
+ *
+ * Two consequences worth internalising before you write any of this. Because the
+ * Restore Key calls show nothing, they are safe to make from places that have no
+ * activity on screen — a backup agent, for instance. And because they show
+ * nothing, there is no user to interpret a failure for you: every one of them
+ * has to be handled in code, which is what the rest of this file is about.
  */
 class CredentialClient(private val credentialManager: CredentialManager) {
 
+    // The two ordinary passkey calls, here for contrast. Same requestJson, from
+    // the same shape of endpoint — but these suspend on a user-facing prompt,
+    // and they need a Context that can actually show one.
     suspend fun createPasskey(context: Context, requestJson: String): String {
         val response = credentialManager.createCredential(
             context = context,
@@ -43,13 +57,22 @@ class CredentialClient(private val credentialManager: CredentialManager) {
     }
 
     /**
-     * Creates the Restore Key. No UI is shown.
+     * Registers the Restore Key. Shows nothing, asks nothing.
      *
-     * The key is backed up to the cloud when the device qualifies for
-     * end-to-end encrypted backup (Google account, backup enabled, screen
-     * lock). When it does not, Credential Manager throws
-     * [E2eeUnavailableException] and the only sensible fallback is a local-only
-     * key, which still survives a cabled device-to-device transfer.
+     * Call it after every successful sign-in, by any method — see
+     * `AuthRepository.signedIn`. There is no good reason to put it behind a
+     * button, and a button would defeat the point.
+     *
+     * `isCloudBackupEnabled` decides how far the key can travel. True asks for it
+     * to go into end-to-end encrypted cloud backup, which is what survives
+     * "set up a new phone from the cloud". A device that cannot do E2EE backup
+     * — no Google account, backup off, or no screen lock — throws
+     * [E2eeUnavailableException] instead. Do not give up there: retry with false
+     * for a local-only key, which still survives a cabled device-to-device
+     * transfer.
+     *
+     * Record which of the two you got. The promise you can make the user is
+     * different, and this call is the only moment you can tell them apart.
      */
     suspend fun createRestoreKey(context: Context, requestJson: String): CreateRestoreKeyResult = try {
         createRestoreKey(context, requestJson, cloudBackup = true)
@@ -71,10 +94,13 @@ class CredentialClient(private val credentialManager: CredentialManager) {
     }
 
     /**
-     * Asks for the Restore Key that came across with the backup.
+     * Asks for the Restore Key that came across with the backup, if there was
+     * one.
      *
-     * Returns null when this device has none, which is the ordinary case on a
-     * fresh install that was not restored from anywhere.
+     * Call this at startup, before you decide to show a sign-in screen. Null is
+     * the ordinary answer, not an error: it is what every fresh install that was
+     * not restored from anywhere returns. Treat it as "carry on to the normal
+     * sign-in flow", never as a failure worth putting in front of the user.
      */
     suspend fun getRestoreKey(context: Context, requestJson: String): String? = try {
         val request = GetCredentialRequest(listOf(GetRestoreCredentialOption(requestJson)))
@@ -83,14 +109,21 @@ class CredentialClient(private val credentialManager: CredentialManager) {
     } catch (_: NoCredentialException) {
         null
     } catch (e: GetCredentialException) {
-        // Play services reports "no restore credential available" through a few
-        // different exception types depending on version, and none of them mean
-        // the app is broken: it just has nothing to restore.
+        // Play services signals "there is no Restore Key here" through several
+        // different exception types depending on its version, and new ones have
+        // appeared over time. Catching the base class and reading it as "no key"
+        // is deliberate: the alternative is an app that shows an error screen on
+        // a perfectly ordinary first launch.
         Log.i(TAG, "No Restore Key available on this device: ${e.type}")
         null
     }
 
-    /** Deletes the local Restore Key. Called after it is redeemed and on sign-out. */
+    /**
+     * Deletes this device's Restore Key. Call it in both places the key stops
+     * being valid: immediately after the server redeems it — it is single use,
+     * so the local copy is already dead — and on sign-out, alongside the
+     * server-side revoke.
+     */
     suspend fun clearRestoreKey() {
         credentialManager.clearCredentialState(
             ClearCredentialStateRequest(ClearCredentialStateRequest.TYPE_CLEAR_RESTORE_CREDENTIAL),
@@ -102,8 +135,17 @@ class CredentialClient(private val credentialManager: CredentialManager) {
     }
 }
 
+/**
+ * What [CredentialClient.createRestoreKey] produced: the response to post to the
+ * server, and how far the resulting key can travel.
+ */
 data class CreateRestoreKeyResult(
     val responseJson: String,
-    /** False when the key is local-only because the device cannot do E2EE backup. */
+    /**
+     * True when the key went into end-to-end encrypted cloud backup and will
+     * survive setting up a new phone from the cloud. False when the device could
+     * not manage that and the key is local-only: still fine for a cabled
+     * device-to-device transfer, useless once the old phone is in a drawer.
+     */
     val cloudBackup: Boolean,
 )

@@ -19,8 +19,13 @@ import kotlin.coroutines.resume
 class BackendException(val status: Int, message: String) : IOException(message)
 
 /**
- * Thin HTTP client for the demo backend. Every WebAuthn payload travels as raw
- * JSON so neither side has to model the WebAuthn structures twice.
+ * Thin HTTP client for the demo backend, and a plain OkHttp one on purpose:
+ * nothing about Zero-Tap Sign-In needs a particular networking stack.
+ *
+ * The one decision worth carrying over is that every WebAuthn payload travels as
+ * raw JSON, so neither side models the WebAuthn structures a second time. The
+ * restore endpoints are the four `/api/restore/...` calls below; the rest is
+ * ordinary session plumbing.
  */
 class BackendClient(
     private val baseUrl: String,

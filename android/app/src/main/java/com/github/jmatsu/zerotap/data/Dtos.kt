@@ -10,9 +10,13 @@ import kotlinx.serialization.json.JsonObject
  * The options half of a WebAuthn ceremony.
  *
  * [requestJson] is a `PublicKeyCredentialCreationOptionsJSON` or
- * `PublicKeyCredentialRequestOptionsJSON` exactly as the server built it. The
- * app never inspects it, it only re-serialises it and hands it to Credential
- * Manager, which keeps the challenge opaque to the client.
+ * `PublicKeyCredentialRequestOptionsJSON` exactly as the server built it. The app
+ * never inspects it: it re-serialises it and hands it to Credential Manager,
+ * which keeps the challenge opaque to the client.
+ *
+ * Resist modelling those structures on the client. They belong to the WebAuthn
+ * spec, they grow, and every field you mirror is one more you can get subtly
+ * wrong on one Android version.
  */
 @Serializable
 data class BeginResponse(
@@ -20,7 +24,8 @@ data class BeginResponse(
     val requestJson: JsonObject,
 )
 
-/** The credential half: whatever Credential Manager produced, passed straight back. */
+/** The credential half: whatever Credential Manager produced, forwarded to the
+ *  server untouched. Same reasoning as [BeginResponse] — do not parse it. */
 @Serializable
 data class FinishRequest(
     val ceremonyId: String,

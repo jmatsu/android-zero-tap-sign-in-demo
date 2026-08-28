@@ -23,8 +23,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // The backup agent already tries this the moment the restore lands, but
-        // that callback is best-effort, so the activity retries on first launch.
+        // The second attempt at the zero-tap sign-in. ZeroTapBackupAgent already
+        // tried the moment the restore landed, but that callback is best-effort
+        // and some restore routes skip it entirely. Repeating it here is cheap,
+        // idempotent, and what makes the path reliable rather than lucky.
         viewModel.onStart(this)
     }
 }

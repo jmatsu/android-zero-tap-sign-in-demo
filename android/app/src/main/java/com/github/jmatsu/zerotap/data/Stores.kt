@@ -5,12 +5,18 @@ import androidx.core.content.edit
 
 /**
  * The session token, deliberately kept out of every backup (see
- * res/xml/data_extraction_rules.xml). A token identifies one install, so
- * letting it ride along to device B would hide the whole point of the demo.
+ * res/xml/data_extraction_rules.xml and res/xml/backup_rules.xml).
  *
- * The sign-in method is stored alongside it, which is what lets the UI still
- * report a zero-tap sign-in that happened in the backup agent's process, before
- * the activity ever ran.
+ * That exclusion is not demo staging, it is a rule for real apps. A bearer token
+ * identifies an install, not a user. Letting it ride along to device B would
+ * sign that device in with no credential checked at all — a genuine hole, and
+ * incidentally the thing that would hide the entire Restore Key flow from you
+ * while you were building it. Whatever your app stores that is scoped to one
+ * install belongs on the same exclusion list.
+ *
+ * The sign-in method is stored beside it, which is what lets the UI still report
+ * a zero-tap sign-in that happened in the backup agent's process, before the
+ * activity ever ran.
  */
 class SessionStore(context: Context) {
     private val prefs = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
@@ -49,9 +55,14 @@ class SessionStore(context: Context) {
 /**
  * What this install knows about its Restore Key.
  *
- * Recording it avoids running a create-restore-key ceremony on every sign-in,
- * as the Restore Credentials guidance recommends, and it gives the UI something
- * concrete to show instead of a bare "probably fine".
+ * Keeping a record is what lets [AuthRepository.ensureRestoreKey] skip the create
+ * ceremony on sign-ins that do not need one, as the Restore Credentials guidance
+ * recommends — and it gives the UI something concrete to show instead of a bare
+ * "probably fine".
+ *
+ * Read it as a claim about the past rather than a fact about the present: it
+ * travels with the backup, so it can arrive on a device whose key did not. See
+ * the null branch of [AuthRepository.signInWithRestoreKey].
  */
 data class RestoreKeyRecord(
     val credentialId: String,
@@ -61,11 +72,12 @@ data class RestoreKeyRecord(
 )
 
 /**
- * State that is meant to survive a device transfer.
+ * State that is meant to survive a device transfer — which here means
+ * everything that is not the session token.
  *
- * Note that the Restore Key record travels with the backup too. On the new
- * device it describes the key that came across, which is exactly what the UI
- * wants to say before the zero-tap sign-in replaces it.
+ * The Restore Key record travels with the backup on purpose. On the new device it
+ * describes the key that came across, which is exactly what the UI wants to say
+ * in the moment before the zero-tap sign-in spends it.
  */
 class AppStateStore(context: Context) {
     private val prefs = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)

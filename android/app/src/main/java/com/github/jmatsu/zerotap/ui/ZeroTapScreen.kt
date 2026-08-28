@@ -57,6 +57,15 @@ import com.github.jmatsu.zerotap.data.SignInMethod
 import com.github.jmatsu.zerotap.data.Timestamps
 import com.github.jmatsu.zerotap.data.short
 
+/**
+ * The demo UI. None of it is required to support Zero-Tap Sign-In; it exists to
+ * make an invisible flow observable — what this install's Restore Key is,
+ * whether the server agrees, and a running log of each ceremony.
+ *
+ * The one habit worth taking from here is the ordering: the screen shows a
+ * neutral "checking" state until [AuthViewModel.onStart] has finished, so a
+ * restored device never flashes a sign-in form on its way to being signed in.
+ */
 @Composable
 fun ZeroTapScreen(viewModel: AuthViewModel, settings: Settings, activity: Activity) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -263,8 +272,10 @@ private fun SignedIn(
 }
 
 /**
- * The payoff screen: this install signed itself in with a key it inherited,
- * without anyone touching the device.
+ * The payoff: this install signed itself in with a key it inherited, without
+ * anyone touching the device. Shown only for [SignInMethod.RESTORE], which is why
+ * the sign-in method has to survive in the session store — the sign-in itself
+ * may well have happened in the backup agent's process.
  */
 @Composable
 internal fun ZeroTapBanner(session: Session) {
@@ -302,7 +313,12 @@ internal fun ZeroTapBanner(session: Session) {
     }
 }
 
-/** Always-visible state of the key that will carry this account to the next device. */
+/**
+ * Always-visible state of the key that will carry this account to the next
+ * device: which key, when it was made, how far it can travel, and whether the
+ * server's count agrees. Nothing here is needed in a shipping app — it is the
+ * instrumentation that makes the demo debuggable.
+ */
 @Composable
 internal fun RestoreKeyCard(
     status: RestoreKeyStatus,
