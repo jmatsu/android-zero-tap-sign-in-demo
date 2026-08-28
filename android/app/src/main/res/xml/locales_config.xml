@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The locales this app ships. Declaring them lets Android 13+ offer a
+    per-app language picker in system settings, so the demo can be shown in
+    either language without changing the device locale.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android"
+    android:defaultLocale="en">
+    <locale android:name="en" />
+    <locale android:name="ja" />
+</locale-config>

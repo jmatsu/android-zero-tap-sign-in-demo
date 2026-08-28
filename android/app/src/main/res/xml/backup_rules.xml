@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup rules for Android 11 and below.
+
+  The session token is deliberately left behind: it identifies this install, not
+  the user, and if it travelled with the backup then device B would come up
+  already signed in and the Restore Key would never be exercised. Everything
+  else (including the "we already registered a Restore Key" flag) does travel.
+-->
+<full-backup-content>
+    <exclude
+        domain="sharedpref"
+        path="session.xml" />
+</full-backup-content>

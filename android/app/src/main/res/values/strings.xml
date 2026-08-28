@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Zero-Tap Demo</string>
+
+    <!-- Header -->
+    <string name="header_title">Zero-Tap Sign-In</string>
+    <string name="header_relying_party">Relying party: %1$s</string>
+
+    <!-- Startup restore-key check -->
+    <string name="startup_checking">Checking for a Restore Key…</string>
+    <string name="startup_restored_from">This device was restored from an account for %1$s.</string>
+    <string name="startup_maybe_transferred">If this device was transferred from another one, no sign-in is needed.</string>
+
+    <!-- Signed out -->
+    <string name="sign_in_title">Sign in</string>
+    <string name="field_username">Username</string>
+    <string name="field_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_create_account">Create account</string>
+    <string name="sign_in_prefilled_note">Prefilled with the account the backend seeds. Create account works too.</string>
+    <string name="action_sign_in_with_passkey">Sign in with a passkey</string>
+
+    <!-- Signed in -->
+    <string name="signed_in_as">Signed in as %1$s</string>
+    <string name="signed_in_with">Signed in with %1$s.</string>
+    <plurals name="passkeys_registered">
+        <item quantity="one">%1$d passkey registered on the server</item>
+        <item quantity="other">%1$d passkeys registered on the server</item>
+    </plurals>
+    <string name="action_create_passkey">Create passkey</string>
+    <string name="action_sign_out">Sign out</string>
+
+    <!-- Sign-in methods -->
+    <string name="method_password">password</string>
+    <string name="method_passkey">passkey</string>
+    <string name="method_restore">zero-tap Restore Key</string>
+    <string name="method_unknown">unknown</string>
+
+    <!-- Zero-tap banner -->
+    <string name="banner_title">Signed in with zero taps</string>
+    <string name="banner_body">The Restore Key from your previous device signed you in. No prompt, no picker, no confirmation.</string>
+    <string name="banner_revoked_note">Revoked by the server on use, so it cannot be replayed.</string>
+    <string name="label_key_redeemed">Key redeemed</string>
+    <string name="label_signed_in_at">Signed in at</string>
+
+    <!-- Restore Key card -->
+    <string name="restore_key_title">Restore Key</string>
+    <string name="restore_key_state_registered">Registered</string>
+    <string name="restore_key_state_failed">Failed</string>
+    <string name="restore_key_state_none">None</string>
+    <string name="label_key">Key</string>
+    <string name="label_created">Created</string>
+    <string name="label_backup">Backup</string>
+    <string name="label_server_holds">Server holds</string>
+    <string name="backup_cloud_eligible">Eligible for encrypted cloud backup</string>
+    <string name="backup_local_only">This device only (no E2EE backup available)</string>
+    <string name="restore_key_next_device_note">The next device restored from this one will sign in with no user action.</string>
+    <string name="restore_key_failure_note">The account still works; the next device transfer will just need a manual sign-in.</string>
+    <string name="restore_key_none">No Restore Key on this device yet.</string>
+    <plurals name="server_restore_key_count">
+        <item quantity="one">%1$d Restore Key</item>
+        <item quantity="other">%1$d Restore Keys</item>
+    </plurals>
+    <string name="restore_key_out_of_step">%1$s — out of step with this device</string>
+    <string name="action_recreate_restore_key">Re-create Restore Key</string>
+    <string name="action_create_restore_key">Create Restore Key</string>
+
+    <!-- Flow log -->
+    <string name="log_view_title">Flow log</string>
+    <string name="log_entry">%1$s  %2$s</string>
+
+    <!-- Flow log messages -->
+    <string name="log_already_signed_in">Already signed in as %1$s on this device</string>
+    <string name="log_creating_account">Creating account \"%1$s\"</string>
+    <string name="log_signing_in_with_password">Signing in with a password</string>
+    <string name="log_passkey_asking_options">Asking the backend for passkey creation options</string>
+    <string name="log_passkey_handing_to_credential_manager">Handing the options to Credential Manager (this one does prompt)</string>
+    <string name="log_passkey_registered">Passkey registered</string>
+    <string name="log_passkey_asking_challenge">Asking the backend for a passkey challenge</string>
+    <string name="log_passkey_assertion_signed">Assertion signed; verifying it on the backend</string>
+    <string name="log_restore_already_registered">Restore Key already registered on this device</string>
+    <string name="log_restore_asking_options">Asking the backend for restore-key creation options</string>
+    <string name="log_restore_created_cloud">Restore Key %1$s created, eligible for encrypted cloud backup</string>
+    <string name="log_restore_created_local">Restore Key %1$s created (local only: this device cannot do E2EE backup)</string>
+    <string name="log_restore_create_failed">Could not create a Restore Key: %1$s</string>
+    <string name="log_restore_looking">Looking for a Restore Key from a previous device</string>
+    <string name="log_restore_none">No Restore Key on this device: normal sign-in required</string>
+    <string name="log_restore_verifying">Restore Key found; verifying the assertion on the backend</string>
+    <string name="log_restore_signed_in">Signed in as %1$s with no user interaction</string>
+    <string name="log_restore_revoked_key">Backend revoked Restore Key %1$s</string>
+    <string name="log_restore_revoked_account">Backend revoked this account\'s Restore Key</string>
+    <string name="log_restore_revoke_failed">Could not revoke the Restore Key: %1$s</string>
+    <string name="log_restore_cleared">Cleared the spent Restore Key from this device</string>
+    <string name="log_restore_clear_failed">Could not clear the spent Restore Key: %1$s</string>
+    <string name="log_signed_out">Signed out</string>
+
+    <!-- Errors -->
+    <string name="error_not_signed_in">Not signed in</string>
+</resources>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Zero-Tap デモ</string>
+
+    <!-- Header -->
+    <string name="header_title">Zero-Tap サインイン</string>
+    <string name="header_relying_party">リライング パーティー: %1$s</string>
+
+    <!-- Startup restore-key check -->
+    <string name="startup_checking">Restore Keyを確認しています…</string>
+    <string name="startup_restored_from">この端末は %1$s のアカウントから復元されました。</string>
+    <string name="startup_maybe_transferred">別の端末から移行した端末であれば、サインインは不要です。</string>
+
+    <!-- Signed out -->
+    <string name="sign_in_title">サインイン</string>
+    <string name="field_username">ユーザー名</string>
+    <string name="field_password">パスワード</string>
+    <string name="action_sign_in">サインイン</string>
+    <string name="action_create_account">アカウント作成</string>
+    <string name="sign_in_prefilled_note">バックエンドが初期投入するアカウントをあらかじめ入力しています。アカウント作成も使えますが、ストアはメモリ上にあるためサーバーを再起動するとリセットされます。</string>
+    <string name="action_sign_in_with_passkey">Passkeyでサインイン</string>
+
+    <!-- Signed in -->
+    <string name="signed_in_as">%1$s としてサインイン中</string>
+    <string name="signed_in_with">%1$s でサインインしました。</string>
+    <plurals name="passkeys_registered">
+        <item quantity="other">サーバーに登録済みのPasskey: %1$d 個</item>
+    </plurals>
+    <string name="action_create_passkey">Passkeyを作成</string>
+    <string name="action_sign_out">サインアウト</string>
+
+    <!-- Sign-in methods -->
+    <string name="method_password">パスワード</string>
+    <string name="method_passkey">Passkey</string>
+    <string name="method_restore">Zero-TapRestore Key</string>
+    <string name="method_unknown">不明な方法</string>
+
+    <!-- Zero-tap banner -->
+    <string name="banner_title">Zero-Tapでサインインしました</string>
+    <string name="banner_body">前の端末から引き継いだRestore Keyでサインインしました。プロンプトも、選択画面も、確認も一切ありません。</string>
+    <string name="banner_revoked_note">使用時にサーバー側で失効するため、再利用はできません。</string>
+    <string name="label_key_redeemed">使用したキー</string>
+    <string name="label_signed_in_at">サインイン日時</string>
+
+    <!-- Restore Key card -->
+    <string name="restore_key_title">Restore Key</string>
+    <string name="restore_key_state_registered">登録済み</string>
+    <string name="restore_key_state_failed">失敗</string>
+    <string name="restore_key_state_none">なし</string>
+    <string name="label_key">キー</string>
+    <string name="label_created">作成日時</string>
+    <string name="label_backup">バックアップ</string>
+    <string name="label_server_holds">サーバー保持数</string>
+    <string name="backup_cloud_eligible">暗号化クラウド バックアップの対象です</string>
+    <string name="backup_local_only">この端末のみ (E2EE バックアップは利用できません)</string>
+    <string name="restore_key_next_device_note">この端末から復元した次の端末は、ユーザー操作なしでサインインできます。</string>
+    <string name="restore_key_failure_note">アカウント自体は使えます。次回の端末移行で手動サインインが必要になるだけです。</string>
+    <string name="restore_key_none">この端末にはまだRestore Keyがありません。</string>
+    <plurals name="server_restore_key_count">
+        <item quantity="other">Restore Key %1$d 個</item>
+    </plurals>
+    <string name="restore_key_out_of_step">%1$s — この端末と食い違っています</string>
+    <string name="action_recreate_restore_key">Restore Keyを作り直す</string>
+    <string name="action_create_restore_key">Restore Keyを作成</string>
+
+    <!-- Flow log -->
+    <string name="log_view_title">フローログ</string>
+    <string name="log_entry">%1$s  %2$s</string>
+
+    <!-- Flow log messages -->
+    <string name="log_already_signed_in">この端末では既に %1$s としてサインイン済みです</string>
+    <string name="log_creating_account">アカウント「%1$s」を作成しています</string>
+    <string name="log_signing_in_with_password">パスワードでサインインしています</string>
+    <string name="log_passkey_asking_options">Passkey作成オプションをバックエンドに要求しています</string>
+    <string name="log_passkey_handing_to_credential_manager">オプションを Credential Manager に渡しています (こちらはプロンプトが出ます)</string>
+    <string name="log_passkey_registered">Passkeyを登録しました</string>
+    <string name="log_passkey_asking_challenge">Passkey用のチャレンジをバックエンドに要求しています</string>
+    <string name="log_passkey_assertion_signed">アサーションに署名しました。バックエンドで検証しています</string>
+    <string name="log_restore_already_registered">この端末ではRestore Keyが登録済みです</string>
+    <string name="log_restore_asking_options">Restore Key作成オプションをバックエンドに要求しています</string>
+    <string name="log_restore_created_cloud">Restore Key %1$s を作成しました。暗号化クラウド バックアップの対象です</string>
+    <string name="log_restore_created_local">Restore Key %1$s を作成しました (この端末は E2EE バックアップができないためローカルのみ)</string>
+    <string name="log_restore_create_failed">Restore Keyを作成できませんでした: %1$s</string>
+    <string name="log_restore_looking">前の端末から引き継いだRestore Keyを探しています</string>
+    <string name="log_restore_none">この端末にRestore Keyはありません。通常のサインインが必要です</string>
+    <string name="log_restore_verifying">Restore Keyが見つかりました。バックエンドでアサーションを検証しています</string>
+    <string name="log_restore_signed_in">ユーザー操作なしで %1$s としてサインインしました</string>
+    <string name="log_restore_revoked_key">バックエンドがRestore Key %1$s を失効させました</string>
+    <string name="log_restore_revoked_account">バックエンドがこのアカウントのRestore Keyを失効させました</string>
+    <string name="log_restore_revoke_failed">Restore Keyを失効できませんでした: %1$s</string>
+    <string name="log_restore_cleared">使用済みのRestore Keyをこの端末から削除しました</string>
+    <string name="log_restore_clear_failed">使用済みのRestore Keyを削除できませんでした: %1$s</string>
+    <string name="log_signed_out">サインアウトしました</string>
+
+    <!-- Errors -->
+    <string name="error_not_signed_in">サインインしていません</string>
+</resources>
